@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Story, StoryScene } from "@/types/story";
-import { X, ChevronUp, ChevronDown, Play, Pause } from "lucide-react";
+import { X, ChevronUp, ChevronDown, Play, Pause, Heart, Share, Volume2, VolumeX, Clock, Calendar } from "lucide-react";
+import { format } from "date-fns";
 
 interface StoryViewerProps {
   story: Story | null;

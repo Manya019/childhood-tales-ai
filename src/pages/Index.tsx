@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { StoryCard } from "@/components/StoryCard";
 import { CreateStoryModal } from "@/components/CreateStoryModal";
-import { StoryViewer } from "@/components/StoryViewer";
+import { ShortsViewer } from "@/components/ShortsViewer";
 import { Story, CreateStoryData } from "@/types/story";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles, Play } from "lucide-react";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-story.jpg";
 import storyDragon from "@/assets/story-dragon.jpg";
@@ -12,8 +12,8 @@ import storyUnderwater from "@/assets/story-underwater.jpg";
 
 const Index = () => {
   const [stories, setStories] = useState<Story[]>([]);
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
+  const [isShortsOpen, setIsShortsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample stories for demo
@@ -29,20 +29,26 @@ const Index = () => {
         emotion: 'happiness',
         art_style: 'Disney style',
         voice_option: 'Adam',
-        scenes: [
-          {
-            id: '1-1',
-            image_url: storyDragon,
-            text: 'Once upon a time, in a magical land far away, there lived a small dragon named Sparkle who was different from all the other dragons.',
-            duration: 5
-          },
-          {
-            id: '1-2',
-            image_url: storyDragon,
-            text: 'While other dragons breathed fire and collected treasure, Sparkle loved to read books and learn new things every day.',
-            duration: 5
-          }
-        ],
+          scenes: [
+            {
+              id: '1-1',
+              image_url: storyDragon,
+              text: 'Once upon a time, in a magical land far away, there lived a small dragon named Sparkle who was different from all the other dragons.',
+              duration: 5
+            },
+            {
+              id: '1-2',
+              image_url: storyDragon,
+              text: 'While other dragons breathed fire and collected treasure, Sparkle loved to read books and learn new things every day.',
+              duration: 5
+            },
+            {
+              id: '1-3',
+              image_url: storyDragon,
+              text: 'One day, Sparkle discovered a magical library hidden deep in the forest, filled with books that could transport readers to incredible adventures.',
+              duration: 5
+            }
+          ],
         times_played: 12,
         created_at: new Date().toISOString(),
         cover_image_url: storyDragon,
@@ -63,6 +69,18 @@ const Index = () => {
             id: '2-1',
             image_url: storyMouse,
             text: 'Meet Pip, the smallest mouse in the forest, who dreamed of going on the biggest adventure of all!',
+            duration: 4
+          },
+          {
+            id: '2-2',
+            image_url: storyMouse,
+            text: 'Armed with nothing but courage and a tiny backpack, Pip set off through the tall grass on a quest to find the legendary Golden Acorn.',
+            duration: 4
+          },
+          {
+            id: '2-3',
+            image_url: storyMouse,
+            text: 'Along the way, Pip met friendly creatures who taught him that being small doesn\'t mean you can\'t do big things!',
             duration: 4
           }
         ],
@@ -87,12 +105,53 @@ const Index = () => {
             image_url: storyUnderwater,
             text: 'Deep beneath the ocean waves, there existed a beautiful kingdom where mermaids, dolphins, and colorful fish lived together in harmony.',
             duration: 6
+          },
+          {
+            id: '3-2',
+            image_url: storyUnderwater,
+            text: 'Princess Marina, a young mermaid with a heart full of kindness, discovered that the coral reef was losing its colors and needed her help.',
+            duration: 6
+          },
+          {
+            id: '3-3',
+            image_url: storyUnderwater,
+            text: 'With the help of her ocean friends, Marina learned that by showing gratitude and caring for others, she could restore the reef\'s magical glow.',
+            duration: 6
           }
         ],
         times_played: 15,
         created_at: new Date(Date.now() - 172800000).toISOString(),
         cover_image_url: storyUnderwater,
-        duration_seconds: 360
+        duration_seconds: 450
+      },
+      {
+        id: '4',
+        title: 'The Space Adventure',
+        prompt: 'A young astronaut explores distant planets and makes new friends',
+        genre: 'Sci Fi',
+        age_group: '6-8',
+        moral_lesson: 'courage',
+        emotion: 'happiness',
+        art_style: 'Comic style',
+        voice_option: 'Adam',
+        scenes: [
+          {
+            id: '4-1',
+            image_url: storyDragon, // Would be space-themed in real app
+            text: 'Captain Luna was the youngest astronaut in the galaxy, but she had the biggest dreams of exploring new worlds.',
+            duration: 5
+          },
+          {
+            id: '4-2',
+            image_url: storyDragon,
+            text: 'When her spaceship landed on Planet Zephyr, she discovered friendly alien creatures who taught her about their colorful world.',
+            duration: 5
+          }
+        ],
+        times_played: 5,
+        created_at: new Date(Date.now() - 259200000).toISOString(),
+        cover_image_url: storyDragon,
+        duration_seconds: 300
       }
     ];
     setStories(sampleStories);
@@ -115,6 +174,12 @@ const Index = () => {
             image_url: storyDragon, // Would be generated based on prompt
             text: `This is the beginning of your ${data.genre.toLowerCase()} story about ${data.prompt.substring(0, 50)}...`,
             duration: 5
+          },
+          {
+            id: `${Date.now()}-2`,
+            image_url: storyDragon,
+            text: `The adventure continues as our hero learns about ${data.moral_lesson} and discovers the joy of ${data.emotion}...`,
+            duration: 5
           }
         ],
         times_played: 0,
@@ -133,13 +198,16 @@ const Index = () => {
   };
 
   const handleStoryClick = (story: Story) => {
-    setSelectedStory(story);
-    setIsViewerOpen(true);
-    
-    // Update play count
+    const storyIndex = stories.findIndex(s => s.id === story.id);
+    setSelectedStoryIndex(storyIndex);
+    setIsShortsOpen(true);
+  };
+
+  const handleStoryChange = (storyId: string) => {
+    // Update play count when story changes
     setStories(prev => 
       prev.map(s => 
-        s.id === story.id 
+        s.id === storyId 
           ? { ...s, times_played: s.times_played + 1 }
           : s
       )
@@ -195,27 +263,46 @@ const Index = () => {
             <CreateStoryModal onCreateStory={handleCreateStory} isCreating={isCreating} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {stories.map((story, index) => (
-              <div key={story.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                <StoryCard 
-                  story={story} 
-                  onClick={() => handleStoryClick(story)} 
-                />
-              </div>
-            ))}
-          </div>
+          <>
+            {/* Play All Button */}
+            <div className="mb-8 text-center">
+              <button
+                onClick={() => {
+                  setSelectedStoryIndex(0);
+                  setIsShortsOpen(true);
+                }}
+                className="inline-flex items-center gap-3 bg-story-gradient hover:opacity-90 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg transition-all duration-300 hover:scale-105 animate-magic-glow"
+              >
+                <Play className="w-6 h-6" fill="currentColor" />
+                Watch Stories (Shorts Style)
+                <div className="bg-white/20 px-2 py-1 rounded-full text-sm">
+                  {stories.length}
+                </div>
+              </button>
+            </div>
+
+            {/* Stories Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {stories.map((story, index) => (
+                <div key={story.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                  <StoryCard 
+                    story={story} 
+                    onClick={() => handleStoryClick(story)} 
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Story Viewer */}
-      <StoryViewer
-        story={selectedStory}
-        isOpen={isViewerOpen}
-        onClose={() => {
-          setIsViewerOpen(false);
-          setSelectedStory(null);
-        }}
+      {/* Shorts Viewer */}
+      <ShortsViewer
+        stories={stories}
+        initialStoryIndex={selectedStoryIndex}
+        isOpen={isShortsOpen}
+        onClose={() => setIsShortsOpen(false)}
+        onStoryChange={handleStoryChange}
       />
     </div>
   );
